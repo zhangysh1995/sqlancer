@@ -1,5 +1,10 @@
 package sqlancer.mysql.oracle;
 
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -21,7 +26,6 @@ public class MySQLTLPWhereOracle extends MySQLQueryPartitioningBase {
         super.check();
         select.setWhereClause(null);
         String originalQueryString = MySQLVisitor.asString(select);
-
         List<String> resultSet = ComparatorHelper.getResultSetFirstColumnAsString(originalQueryString, errors, state);
 
         if (Randomly.getBoolean()) {
@@ -35,6 +39,19 @@ public class MySQLTLPWhereOracle extends MySQLQueryPartitioningBase {
         select.setWhereClause(isNullPredicate);
         String thirdQueryString = MySQLVisitor.asString(select);
         List<String> combinedString = new ArrayList<>();
+
+        try(FileWriter fw = new FileWriter("sql5000.sql", true);
+            BufferedWriter bw = new BufferedWriter(fw);
+            PrintWriter out = new PrintWriter(bw))
+        {
+            out.println(originalQueryString);
+            //more code
+            out.println(combinedString);
+            //more code
+        } catch (IOException e) {
+            //exception handling left as an exercise for the reader
+        }
+
         List<String> secondResultSet = ComparatorHelper.getCombinedResultSet(firstQueryString, secondQueryString,
                 thirdQueryString, combinedString, Randomly.getBoolean(), state, errors);
         ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString,

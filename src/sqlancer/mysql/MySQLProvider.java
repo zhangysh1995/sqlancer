@@ -1,5 +1,9 @@
 package sqlancer.mysql;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -137,6 +141,15 @@ public class MySQLProvider extends SQLProviderAdapter<MySQLGlobalState, MySQLOpt
             String tableName = DBMSCommon.createTableName(globalState.getSchema().getDatabaseTables().size());
             SQLQueryAdapter createTable = MySQLTableGenerator.generate(globalState, tableName);
             globalState.executeStatement(createTable);
+
+            try(FileWriter fw = new FileWriter("sql5000ddl.sql", true);
+                BufferedWriter bw = new BufferedWriter(fw);
+                PrintWriter out = new PrintWriter(bw))
+            {
+                out.println(createTable);
+            } catch (IOException e) {
+                //exception handling left as an exercise for the reader
+            }
         }
 
         StatementExecutor<MySQLGlobalState, Action> se = new StatementExecutor<>(globalState, Action.values(),
