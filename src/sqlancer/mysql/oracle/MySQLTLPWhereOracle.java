@@ -1,10 +1,6 @@
 package sqlancer.mysql.oracle;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -40,20 +36,29 @@ public class MySQLTLPWhereOracle extends MySQLQueryPartitioningBase {
         String thirdQueryString = MySQLVisitor.asString(select);
         List<String> combinedString = new ArrayList<>();
 
+        boolean randBool = Randomly.getBoolean();
+
         try(FileWriter fw = new FileWriter("sql5000.sql", true);
             BufferedWriter bw = new BufferedWriter(fw);
             PrintWriter out = new PrintWriter(bw))
         {
             out.println(originalQueryString);
-            //more code
-            out.println(combinedString);
+            String unionString;
+            if (randBool) {
+                unionString = firstQueryString + " UNION ALL " + secondQueryString + " UNION ALL "
+                        + thirdQueryString;
+            } else {
+                unionString = firstQueryString + " UNION " + secondQueryString + " UNION "
+                        + thirdQueryString;
+            }
+            out.println(unionString);
             //more code
         } catch (IOException e) {
             //exception handling left as an exercise for the reader
         }
 
         List<String> secondResultSet = ComparatorHelper.getCombinedResultSet(firstQueryString, secondQueryString,
-                thirdQueryString, combinedString, Randomly.getBoolean(), state, errors);
+                thirdQueryString, combinedString, randBool, state, errors);
         ComparatorHelper.assumeResultSetsAreEqual(resultSet, secondResultSet, originalQueryString, combinedString,
                 state);
     }
